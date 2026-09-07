@@ -12,7 +12,7 @@ class MenuPrincipal(Menu):
     def __init__(self, nado_livre: NadoLivre) -> None:
         self.nado_livre = nado_livre
 
-    def exibir(self) -> None:
+    def executar(self) -> None:
         while True:
             print()
             print("=" * 40)

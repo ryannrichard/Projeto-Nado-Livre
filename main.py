@@ -7,8 +7,7 @@ def main():
 
     menu_principal = MenuPrincipal(nado_livre)
 
-    menu_principal.exibir()
-
+    menu_principal.executar()
 
 if __name__ == "__main__":
     main()
