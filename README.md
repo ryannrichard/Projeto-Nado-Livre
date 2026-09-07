@@ -15,9 +15,9 @@ O controle manual de toalhas na escola de natação dificultava o rastreio de em
 
 ---
 
-## 🗄️ Modelo Lógico do Banco de Dados (1ª Versão)
+## 🗄️ Modelo Lógico do Banco de Dados
 
-Abaixo está o Diagrama de Entidade-Relacionamento que representa a estrutura de dados do sistema.
+Diagrama de Entidade-Relacionamento que representa a estrutura de dados do sistema.
 
 ```mermaid
 erDiagram
@@ -40,8 +40,14 @@ erDiagram
         string id PK
         string status
     }
+```
+## 📐 Documentação da Arquitetura
 
-    NADADOR ||--o{ UTILIZACAO : "solicita"
-    TOALHA ||--o{ UTILIZACAO : "usada_em"
-    ATENDENTE ||--o{ UTILIZACAO : "realiza_entrega"
-    ATENDENTE |o--o{ UTILIZACAO : "recebe_devolucao"
+Após as novas alterações da segunda versão, abaixo temos a mostra da nova camada de serviços e a hierarquia do sistema:
+
+```mermaid
+graph TD
+    Interface[Interface / Menus] --> Serviços[Camada de Serviços]
+    Serviços --> Aplicação[Aplicação / NadoLivre]
+    Aplicação --> Modelos[Modelos / Entidades]
+```
