@@ -1,0 +1,9 @@
+[
+    {
+        "nadador_id": 22,
+        "toalha_id": "12",
+        "atendente_entrega_id": 33,
+        "atendente_devolucao_id": 33,
+        "aberta": false
+    }
+]
