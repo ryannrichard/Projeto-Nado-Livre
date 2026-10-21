@@ -16,7 +16,10 @@ class MenuNadadores(Menu):
             print("2 - Listar")
             print("3 - Consultar")
             print("4 - Consultar utilizações")
+            print("5 - Bloquear Nadador")
+            print("6 - Desbloquear Nadador")
             print("0 - Voltar")
+
 
             opcao = input("Escolha: ").strip()
 
@@ -29,6 +32,10 @@ class MenuNadadores(Menu):
                     self.consultar()
                 elif opcao == "4":
                     self.consultar_utilizacoes()
+                elif opcao == "5":
+                    self.bloquear()
+                elif opcao == "6":
+                    self.desbloquear()
                 elif opcao == "0":
                     return
                 else:
@@ -54,8 +61,11 @@ class MenuNadadores(Menu):
         if not nadadores:
             print("Nenhum nadador cadastrado.")
         else:
-            for n in nadadores:
-                print(f"ID: {n.id} | Nome: {n.nome}")
+           for n in nadadores:
+                situacao_toalha = "Toalha retirada" if n.tem_toalha_retirada() else "Sem toalha"
+                status_bloqueio = " [Bloqueado]" if getattr(n, "bloqueio", False) else "[Desbloqueado]"
+                
+                print(f"ID: {n.id} - {n.nome} - {situacao_toalha} - {status_bloqueio}")
                 
         input("\nPressione ENTER para continuar...")
 
@@ -64,8 +74,16 @@ class MenuNadadores(Menu):
         identificador = int(input("Digite o ID do Nadador: "))
         
         nadador = self.__nadador_service.consultar(identificador)
-        print(f"\nNadador encontrado: ID: {nadador.id} | Nome: {nadador.nome}")
-        input("Pressione ENTER para continuar...")
+        
+        situacao_toalha = "Toalha retirada" if nadador.tem_toalha_retirada() else "Sem toalha"
+        status_bloqueio = "[Bloqueado]" if getattr(nadador, "bloqueio", False) else "[Desbloqueado]"
+        
+        print(
+            f"\nNadador encontrado: ID: {nadador.id} - {nadador.nome} - "
+            f"{situacao_toalha} - {status_bloqueio}"
+        )
+        
+        input("\nPressione ENTER para continuar...")
 
     def consultar_utilizacoes(self) -> None:
         print("\n--- CONSULTAR UTILIZAÇÕES DO NADADOR ---")
@@ -81,4 +99,28 @@ class MenuNadadores(Menu):
                 status = "Aberta" if u.aberta else "Concluída"
                 print(f"- Toalha ID {u.toalha.id} | Status: {status}")
                 
+        input("\nPressione ENTER para continuar...")
+    
+    def bloquear(self) -> None:
+        print("\n--- BLOQUEIO DE NADADOR ---")
+        try:
+            identificador = int(input("Digite o ID do Nadador: "))
+            nadador = self.__nadador_service.bloquear(identificador)
+            print(f"Nadador '{nadador.nome}' bloqueado com sucesso!")
+        except ValueError:
+            print("Erro: ID inválido. Digite apenas números.")
+        except NadoLivreError as erro:
+            print(f"Erro: {erro}")
+        input("\nPressione ENTER para continuar...")
+    
+    def desbloquear(self) -> None:
+        print("\n--- DESBLOQUEIO DE NADADOR ---")
+        try:
+            identificador = int(input("Digite o ID do Nadador: "))
+            nadador = self.__nadador_service.desbloquear(identificador)
+            print(f"Nadador '{nadador.nome}' desbloqueado com sucesso!")
+        except ValueError:
+            print("Erro: ID inválido. Digite apenas números.")
+        except NadoLivreError as erro:
+            print(f"Erro: {erro}")
         input("\nPressione ENTER para continuar...")

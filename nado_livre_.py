@@ -1,3 +1,5 @@
+import os
+
 from modelos.nadador import Nadador
 from modelos.atendente import Atendente
 from modelos.toalha import Toalha
@@ -17,24 +19,28 @@ class NadoLivre:
     """
 
     def __init__(self) -> None:
+        # Garante que a pasta 'dados' fique sempre dentro da raiz do projeto
+        caminho_base = os.path.dirname(os.path.abspath(__file__))
+        pasta_dados = os.path.join(caminho_base, "dados")
+
         # Listas que armazenam os objetos em memória
         self.__nadadores: list[Nadador] = []
         self.__atendentes: list[Atendente] = []
         self.__toalhas: list[Toalha] = []
         self.__utilizacoes: list[Utilizacao] = []
 
-        # Objetos responsáveis pela persistência
+        # Objetos de persistência apontando para o caminho absoluto fixo
         self.__persistencia_nadadores = NadadorPersistencia(
-            "dados/nadadores.json"
+            os.path.join(pasta_dados, "nadadores.json")
         )
         self.__persistencia_atendentes = AtendentePersistencia(
-            "dados/atendentes.json"
+            os.path.join(pasta_dados, "atendentes.json")
         )
         self.__persistencia_toalhas = ToalhaPersistencia(
-            "dados/toalhas.json"
+            os.path.join(pasta_dados, "toalhas.json")
         )
         self.__persistencia_utilizacoes = UtilizacaoPersistencia(
-            "dados/utilizacoes.json"
+            os.path.join(pasta_dados, "utilizacoes.json")
         )
 
         # Recupera os dados salvos anteriormente
@@ -42,13 +48,10 @@ class NadoLivre:
 
     def __carregar_dados(self) -> None:
         """Carrega os cadastros e depois reconstrói os históricos."""
-
-        # Primeiro, carrega os objetos principais
         self.__nadadores = self.__persistencia_nadadores.carregar()
         self.__atendentes = self.__persistencia_atendentes.carregar()
         self.__toalhas = self.__persistencia_toalhas.carregar()
 
-        # Depois, carrega as utilizações e reconstrói os vínculos
         self.__utilizacoes = self.__persistencia_utilizacoes.carregar(
             self.__nadadores,
             self.__toalhas,
@@ -57,14 +60,12 @@ class NadoLivre:
 
     def salvar_dados(self) -> None:
         """Salva todos os dados do sistema nos arquivos JSON."""
-
         self.__persistencia_nadadores.salvar(self.__nadadores)
         self.__persistencia_atendentes.salvar(self.__atendentes)
         self.__persistencia_toalhas.salvar(self.__toalhas)
         self.__persistencia_utilizacoes.salvar(self.__utilizacoes)
 
     # Métodos de toalhas
-
     def obter_toalhas(self) -> list[Toalha]:
         return self.__toalhas.copy()
 
@@ -73,7 +74,6 @@ class NadoLivre:
         self.salvar_dados()
 
     # Métodos de utilizações
-
     def obter_utilizacoes(self) -> list[Utilizacao]:
         return self.__utilizacoes.copy()
 
@@ -82,7 +82,6 @@ class NadoLivre:
         self.salvar_dados()
 
     # Métodos de nadadores
-
     def obter_nadadores(self) -> list[Nadador]:
         return self.__nadadores.copy()
 
@@ -91,7 +90,6 @@ class NadoLivre:
         self.salvar_dados()
 
     # Métodos de atendentes
-
     def obter_atendentes(self) -> list[Atendente]:
         return self.__atendentes.copy()
 

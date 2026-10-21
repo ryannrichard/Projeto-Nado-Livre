@@ -8,6 +8,7 @@ class Nadador:
         self.nome: str = nome
         self.id: int = id
         self.__utilizacoes: list = []
+        self.bloqueio: str = False
 
     def __str__(self):
         return f"Nadador [ID: {self.id} | Nome: {self.nome}]"
@@ -20,3 +21,6 @@ class Nadador:
 
     def consultar_utilizacoes(self) -> list:
         return self.__utilizacoes
+    
+    def tem_toalha_retirada(self) -> bool:
+        return any(utilizacao.aberta for utilizacao in self.__utilizacoes)

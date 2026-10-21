@@ -50,6 +50,17 @@ class UtilizacaoService:
             raise NadoLivreError(
                 f"Nadador com ID {nadador_id} não encontrado."
             )
+        
+        if nadador.bloqueio == True:
+            raise NadoLivreError(
+                f"Nadador '{nadador.nome}' (ID {nadador_id}) está bloqueado e não pode retirar toalhas."
+            )
+        
+        for u in self._aplicacao.obter_utilizacoes():
+            if int(u.nadador.id) == nadador_id and u.aberta:
+                raise NadoLivreError(
+                    "Não é possível realizar a retirada.\nO nadador já possui uma toalha retirada."
+                )
 
         # Localiza o atendente responsável pela entrega
         atendente = None

@@ -41,3 +41,17 @@ class NadadorService:
         self.consultar(nadador_id)
         utilizacoes = self._aplicacao.obter_utilizacoes()
         return [u for u in utilizacoes if u.nadador.id == nadador_id]
+    
+    def bloquear(self, identificador: int) -> Nadador:
+        """Bloqueia um nadador e persiste a alteração."""
+        nadador = self.consultar(identificador)
+        nadador.bloqueio = True
+        self._aplicacao.salvar_dados()
+        return nadador
+
+    def desbloquear(self, identificador: int) -> Nadador:
+        """Desbloqueia um nadador e persiste a alteração."""
+        nadador = self.consultar(identificador)
+        nadador.bloqueio = False
+        self._aplicacao.salvar_dados()
+        return nadador

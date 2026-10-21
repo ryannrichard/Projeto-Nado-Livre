@@ -10,7 +10,6 @@ class NadadorPersistencia:
         self.__arquivo = arquivo
 
     def salvar(self, nadadores):
-
         self.__criar_diretorio()
 
         dados = []
@@ -18,7 +17,8 @@ class NadadorPersistencia:
         for nadador in nadadores:
             dados.append({
                 "id": nadador.id,
-                "nome": nadador.nome
+                "nome": nadador.nome,
+                "bloqueio": getattr(nadador, "bloqueio", False)
             })
 
         with open(
@@ -26,7 +26,6 @@ class NadadorPersistencia:
             "w",
             encoding="utf-8"
         ) as arquivo:
-
             json.dump(
                 dados,
                 arquivo,
@@ -35,7 +34,6 @@ class NadadorPersistencia:
             )
 
     def carregar(self):
-
         if not os.path.exists(self.__arquivo):
             return []
 
@@ -44,30 +42,21 @@ class NadadorPersistencia:
             "r",
             encoding="utf-8"
         ) as arquivo:
-
             dados = json.load(arquivo)
 
         nadadores = []
 
         for item in dados:
-
             nadador = Nadador(
                 item["nome"],
                 item["id"]
             )
-
+            nadador.bloqueio = item.get("bloqueio", False)
             nadadores.append(nadador)
 
         return nadadores
 
     def __criar_diretorio(self):
-
-        diretorio = os.path.dirname(
-            self.__arquivo
-        )
-
+        diretorio = os.path.dirname(self.__arquivo)
         if diretorio:
-            os.makedirs(
-                diretorio,
-                exist_ok=True
-            )
+            os.makedirs(diretorio, exist_ok=True)

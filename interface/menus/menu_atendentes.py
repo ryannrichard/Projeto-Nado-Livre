@@ -55,7 +55,7 @@ class MenuAtendentes(Menu):
             print("Nenhum atendente cadastrado.")
         else:
             for a in atendentes:
-                print(f"ID: {a.id} | Nome: {a.nome}")
+                print(f"ID: {a.id} - {a.nome}")
                 
         input("\nPressione ENTER para continuar...")
 
@@ -64,7 +64,7 @@ class MenuAtendentes(Menu):
         identificador = int(input("Digite o ID do Atendente: "))
         
         atendente = self.__atendente_service.consultar(identificador)
-        print(f"\nAtendente encontrado: ID: {atendente.id} | Nome: {atendente.nome}")
+        print(f"\nAtendente encontrado: ID: {atendente.id} - {atendente.nome}")
         input("Pressione ENTER para continuar...")
 
     def consultar_utilizacoes(self) -> None:
