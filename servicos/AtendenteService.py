@@ -1,53 +1,58 @@
-from nado_livre_ import NadoLivre
+from sqlalchemy import or_, select
+
 from modelos.atendente import Atendente
+from modelos.utilizacao import Utilizacao
 from excecoes.NadoLivreError import NadoLivreError
+from persistencia.sessao import obter_sessao
+
 
 class AtendenteService:
     """
-    Serviço responsável por coordenar as operações de negócio 
+    Serviço responsável por coordenar as operações de negócio
     relacionadas aos atendentes do sistema.
     """
 
-    def __init__(self, aplicacao: NadoLivre) -> None:
-        self._aplicacao = aplicacao
-
     def cadastrar(self, identificador: int, nome: str) -> Atendente:
         """Cadastra um novo atendente após validar as regras de negócio."""
-        
-        for atendente in self._aplicacao.obter_atendentes():
-            if atendente.id == identificador:
-                raise NadoLivreError(f"O atendente com ID {identificador} já está cadastrado.")
-        
-        if not nome.strip():
-            raise NadoLivreError("O nome do atendente não pode ser vazio.")
-            
-        novo_atendente = Atendente(nome, identificador)
-        self._aplicacao.adicionar_atendente(novo_atendente)
-        return novo_atendente
+        with obter_sessao() as sessao:
+            if sessao.get(Atendente, identificador) is not None:
+                raise NadoLivreError(
+                    f"O atendente com ID {identificador} já está cadastrado."
+                )
+
+            if not nome.strip():
+                raise NadoLivreError("O nome do atendente não pode ser vazio.")
+
+            novo_atendente = Atendente(nome, identificador)
+            sessao.add(novo_atendente)
+            sessao.commit()
+            return novo_atendente
 
     def listar_todos(self) -> list[Atendente]:
         """Retorna todos os atendentes cadastrados."""
-        return self._aplicacao.obter_atendentes()
-    
+        with obter_sessao() as sessao:
+            return list(sessao.scalars(select(Atendente).order_by(Atendente.id)))
+
     def consultar(self, identificador: int) -> Atendente:
         """Busca um atendente pelo ID. Lança exceção se não encontrar."""
-        for atendente in self._aplicacao.obter_atendentes():
-            if atendente.id == identificador:
-                return atendente
-        raise NadoLivreError(f"Atendente com ID {identificador} não encontrado.")
-    
-    def consultar_utilizacoes(self, atendente_id: int) -> list:
-        """Retorna o histórico de utilizações vinculadas a um atendente específico."""
+        with obter_sessao() as sessao:
+            atendente = sessao.get(Atendente, identificador)
+            if atendente is None:
+                raise NadoLivreError(
+                    f"Atendente com ID {identificador} não encontrado."
+                )
+            return atendente
+
+    def consultar_utilizacoes(self, atendente_id: int) -> list[Utilizacao]:
+        """Retorna as utilizações em que o atendente entregou ou recebeu."""
         self.consultar(atendente_id)
-        
-        utilizacoes = self._aplicacao.obter_utilizacoes()
-        
-        historico = []
-        for u in utilizacoes:
-            if u.atendente_entrega is not None and u.atendente_entrega.id == atendente_id:
-                historico.append(u)
-                
-            elif u.atendente_devolucao is not None and u.atendente_devolucao.id == atendente_id:
-                historico.append(u)
-                
-        return historico
+
+        with obter_sessao() as sessao:
+            return list(sessao.scalars(
+                select(Utilizacao)
+                .where(or_(
+                    Utilizacao.atendente_entrega_id == atendente_id,
+                    Utilizacao.atendente_devolucao_id == atendente_id,
+                ))
+                .order_by(Utilizacao.id)
+            ))

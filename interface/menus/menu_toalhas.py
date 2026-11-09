@@ -8,7 +8,7 @@ class MenuToalhas(Menu):
     """Menu das funcionalidades relacionadas às toalhas."""
 
     def __init__(self, nado_livre: NadoLivre) -> None:
-        self.__toalha_service = ToalhaService(nado_livre)
+        self.__toalha_service = ToalhaService()
         self.__tela = TelaToalhas()
 
     def executar(self) -> None:

@@ -1,57 +1,66 @@
-from nado_livre_ import NadoLivre
+from sqlalchemy import select
+
 from modelos.nadador import Nadador
 from excecoes.NadoLivreError import NadoLivreError
+from persistencia.sessao import obter_sessao
+
 
 class NadadorService:
     """
-    Serviço responsável por coordenar as operações de negócio 
+    Serviço responsável por coordenar as operações de negócio
     relacionadas aos nadadores do sistema.
     """
 
-    def __init__(self, aplicacao: NadoLivre) -> None:
-        self._aplicacao = aplicacao
-
     def cadastrar(self, identificador: int, nome: str) -> Nadador:
         """Cadastra um novo nadador após validar as regras de negócio."""
-        
-        for nadador in self._aplicacao.obter_nadadores():
-            if nadador.id == identificador:
-                raise NadoLivreError(f"O nadador com ID {identificador} já está cadastrado.")
-        
-        if not nome.strip():
-            raise NadoLivreError("O nome do nadador não pode ser vazio.")
-        novo_nadador = Nadador(nome, identificador)
-        
-        self._aplicacao.adicionar_nadador(novo_nadador)
-        return novo_nadador
-    
+        with obter_sessao() as sessao:
+            if sessao.get(Nadador, identificador) is not None:
+                raise NadoLivreError(
+                    f"O nadador com ID {identificador} já está cadastrado."
+                )
+
+            if not nome.strip():
+                raise NadoLivreError("O nome do nadador não pode ser vazio.")
+
+            novo_nadador = Nadador(nome, identificador)
+            sessao.add(novo_nadador)
+            sessao.commit()
+            return novo_nadador
+
     def listar_todos(self) -> list[Nadador]:
         """Retorna todos os nadadores cadastrados."""
-        return self._aplicacao.obter_nadadores()
-    
+        with obter_sessao() as sessao:
+            return list(sessao.scalars(select(Nadador).order_by(Nadador.id)))
+
     def consultar(self, identificador: int) -> Nadador:
         """Busca um nadador pelo ID. Lança exceção se não encontrar."""
-        for nadador in self._aplicacao.obter_nadadores():
-            if nadador.id == identificador:
-                return nadador
-        raise NadoLivreError(f"Nadador com ID {identificador} não encontrado.")
+        with obter_sessao() as sessao:
+            nadador = sessao.get(Nadador, identificador)
+            if nadador is None:
+                raise NadoLivreError(
+                    f"Nadador com ID {identificador} não encontrado."
+                )
+            return nadador
 
     def consultar_utilizacoes(self, nadador_id: int) -> list:
         """Retorna o histórico de utilizações de um nadador específico."""
-        self.consultar(nadador_id)
-        utilizacoes = self._aplicacao.obter_utilizacoes()
-        return [u for u in utilizacoes if u.nadador.id == nadador_id]
-    
+        return self.consultar(nadador_id).consultar_utilizacoes()
+
     def bloquear(self, identificador: int) -> Nadador:
         """Bloqueia um nadador e persiste a alteração."""
-        nadador = self.consultar(identificador)
-        nadador.bloqueio = True
-        self._aplicacao.salvar_dados()
-        return nadador
+        return self._definir_bloqueio(identificador, True)
 
     def desbloquear(self, identificador: int) -> Nadador:
         """Desbloqueia um nadador e persiste a alteração."""
-        nadador = self.consultar(identificador)
-        nadador.bloqueio = False
-        self._aplicacao.salvar_dados()
-        return nadador
+        return self._definir_bloqueio(identificador, False)
+
+    def _definir_bloqueio(self, identificador: int, bloqueado: bool) -> Nadador:
+        with obter_sessao() as sessao:
+            nadador = sessao.get(Nadador, identificador)
+            if nadador is None:
+                raise NadoLivreError(
+                    f"Nadador com ID {identificador} não encontrado."
+                )
+            nadador.bloqueio = bloqueado
+            sessao.commit()
+            return nadador

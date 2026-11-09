@@ -7,7 +7,7 @@ class MenuAtendentes(Menu):
     """Menu das funcionalidades relacionadas aos atendentes."""
 
     def __init__(self, nado_livre: NadoLivre) -> None:
-        self.__atendente_service = AtendenteService(nado_livre)
+        self.__atendente_service = AtendenteService()
 
     def executar(self) -> None:
         while True:

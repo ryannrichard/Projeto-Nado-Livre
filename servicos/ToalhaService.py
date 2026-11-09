@@ -1,33 +1,49 @@
-from nado_livre_ import NadoLivre
+from sqlalchemy import select
+
 from modelos.toalha import Toalha
 from excecoes.NadoLivreError import NadoLivreError
+from persistencia.sessao import obter_sessao
+
 
 class ToalhaService:
     """
     Serviço responsável pelas regras de negócio e operações de Toalhas.
     """
 
-    def __init__(self, aplicacao: NadoLivre) -> None:
-        self._aplicacao = aplicacao
-
     def cadastrar(self, identificador: int) -> Toalha:
         """Cadastra uma nova toalha validando duplicidade de ID."""
-        for toalha in self._aplicacao.obter_toalhas():
-            if toalha.id == identificador:
-                raise NadoLivreError(f"A toalha com ID {identificador} já está cadastrada.")
-        
-        nova_toalha = Toalha(identificador)
-        self._aplicacao.adicionar_toalha(nova_toalha)
-        return nova_toalha
+        identificador = int(identificador)
+
+        with obter_sessao() as sessao:
+            if sessao.get(Toalha, identificador) is not None:
+                raise NadoLivreError(
+                    f"A toalha com ID {identificador} já está cadastrada."
+                )
+
+            nova_toalha = Toalha(identificador)
+            sessao.add(nova_toalha)
+            sessao.commit()
+            return nova_toalha
 
     def listar_todas(self) -> list[Toalha]:
         """Retorna todas as toalhas cadastradas."""
-        return self._aplicacao.obter_toalhas()
+        with obter_sessao() as sessao:
+            return list(sessao.scalars(select(Toalha).order_by(Toalha.id)))
 
     def consultar_disponiveis(self) -> list[Toalha]:
         """Retorna apenas toalhas livres para uso."""
-        return [t for t in self._aplicacao.obter_toalhas() if not t.em_uso]
+        with obter_sessao() as sessao:
+            return list(sessao.scalars(
+                select(Toalha)
+                .where(Toalha._em_uso.is_(False))
+                .order_by(Toalha.id)
+            ))
 
     def consultar_em_uso(self) -> list[Toalha]:
         """Retorna apenas toalhas atualmente emprestadas."""
-        return [t for t in self._aplicacao.obter_toalhas() if t.em_uso]
+        with obter_sessao() as sessao:
+            return list(sessao.scalars(
+                select(Toalha)
+                .where(Toalha._em_uso.is_(True))
+                .order_by(Toalha.id)
+            ))

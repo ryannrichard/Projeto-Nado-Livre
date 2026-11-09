@@ -11,7 +11,7 @@ class MenuUtilizacoes(Menu):
     """
 
     def __init__(self, nado_livre: NadoLivre) -> None:
-        self.__utilizacao_service = UtilizacaoService(nado_livre)
+        self.__utilizacao_service = UtilizacaoService()
         self.__tela = TelaUtilizacoes(nado_livre)
 
     def executar(self) -> None:
