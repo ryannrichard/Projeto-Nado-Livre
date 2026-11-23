@@ -1,6 +1,4 @@
-from pathlib import Path
-
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine
 
 from modelos.base import Base
 
@@ -10,20 +8,9 @@ import modelos.atendente  # noqa: F401
 import modelos.toalha  # noqa: F401
 import modelos.utilizacao  # noqa: F401
 
-CAMINHO_BANCO = (
-    Path(__file__).resolve().parent.parent / "dados" / "nado_livre.db"
-)
-CAMINHO_BANCO.parent.mkdir(exist_ok=True)
+URL_BANCO = "mysql+pymysql://root:@localhost:3306/nado_livre"
 
-engine = create_engine(f"sqlite:///{CAMINHO_BANCO}")
-
-
-@event.listens_for(engine, "connect")
-def _ativar_chaves_estrangeiras(conexao, _registro) -> None:
-    """O SQLite ignora chaves estrangeiras por padrão; isso as ativa."""
-    cursor = conexao.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
+engine = create_engine(URL_BANCO, echo=False)
 
 
 def criar_tabelas() -> None:
