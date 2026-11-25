@@ -1,15 +1,26 @@
-from sqlalchemy import create_engine
+
+from sqlalchemy import create_engine, URL
 
 from modelos.base import Base
 
 # Importar os modelos registra as tabelas em Base.metadata
-import modelos.nadador  # noqa: F401
-import modelos.atendente  # noqa: F401
-import modelos.toalha  # noqa: F401
-import modelos.utilizacao  # noqa: F401
+import modelos.nadador
+import modelos.atendente
+import modelos.toalha
+import modelos.utilizacao
 
-URL_BANCO = "mysql+pymysql://root:@localhost:3306/nado_livre"
 
+# Dados de conexão com o MySQL
+URL_BANCO = URL.create(
+    drivername="mysql+pymysql",
+    username="root",
+    password="",
+    host="localhost",
+    port=3306,
+    database="nado_livre"
+)
+
+# Criar conexão com o banco de dados
 engine = create_engine(URL_BANCO, echo=False)
 
 
